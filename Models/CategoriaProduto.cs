@@ -3,11 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace APIDesafio.Models
 {
-    public class Categoria
+    public class CategoriaProduto
     {
 
         [Key]
         public int Id { get; set; }
-        public string Titulo { get; set; }
+        public Produto Produto { get; set; }
+        public Categoria Categoria { get; set; }
     }
 }

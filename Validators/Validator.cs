@@ -1,4 +1,7 @@
-using System.Web.Mvc;
+
+
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace APIDesafio.Validators
 {
@@ -8,7 +11,7 @@ namespace APIDesafio.Validators
         {
             if (!context.ModelState.IsValid)
             {
-                context.Result = BadRequestObjectResult(context.ModelState);
+                context.Result = new  BadRequestObjectResult(context.ModelState);
             }
         }
         public void OnActionExecuted(ActionExecutedContext context)

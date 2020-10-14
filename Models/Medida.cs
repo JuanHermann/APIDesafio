@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace APIDesafio.Models
 {
-    public class Medidas
+    public class Medida
     {
         public int Id { get; set; }
         public double Altura { get; set; }

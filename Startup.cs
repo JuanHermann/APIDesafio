@@ -16,6 +16,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using APIDesafio.Data;
+using APIDesafio.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using System.Reflection;
+using System.IO;
 
 namespace APIDesafio
 {
@@ -56,6 +61,15 @@ namespace APIDesafio
             //     };
             // });
 
+            services.AddMvc(options =>
+            {
+                options.Filters.Add(new ValidationFilter());
+            }).AddFluentValidation            (options =>
+            {
+                options.RegisterValidatorsFromAssemblyContaining<Startup>();
+
+            });
+
             services.AddSwaggerGen(c =>
             {
 
@@ -68,26 +82,29 @@ namespace APIDesafio
                     Scheme = "Bearer"
                 });
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
+                //c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                //{
+                //    {
+                //        new OpenApiSecurityScheme
+                //        {
+                //            Reference = new OpenApiReference
+                //            {
+                //                Type = ReferenceType.SecurityScheme,
+                //                Id = "Bearer"
+                //            },
+                //            Scheme = "oauth2",
+                //            Name = "Bearer",
+                //            In = ParameterLocation.Header,
 
-                        },
-                        new List<string>()
-                    }
-                });
+                //        },
+                //        new List<string>()
+                //    }
+                //});
 
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ApiGit", Version = "v1" });
+                //c.SwaggerDoc("v1", new OpenApiInfo { Title = "ApiDesafio", Version = "v1" });
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
 
             });
         }
