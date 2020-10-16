@@ -34,31 +34,27 @@ namespace APIDesafio.Controllers
         /// <summary>
         /// Cadastra uma nova CategoriaProduto.
         /// </summary>
-        /// <remarks>
-        /// Exemplo de request:
-        ///
-        ///     {
-        ///        "Id": 0,
-        ///        "Titulo": "Alimento"
-        ///     }
-        ///
-        /// </remarks>
-        /// <param name="model"></param>
         /// <returns>A nova CategoriaProduto cadastrada</returns>
         /// <response code="201">Returns the newly created item</response>
         /// <response code="400">If the item is null</response>            
         [HttpPost]
-        [Route("")]
+        [Route("{categoriaId:int}/{produtoId:int}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<CategoriaProduto>> Post([FromServices] DataContext context, [FromBody] CategoriaProduto model)
+        public async Task<ActionResult<CategoriaProduto>> Post([FromServices] DataContext context, int categoriaId,int produtoId)
         {
-            var validator = new CategoriaProdutoValidator();
-            if (validator.Validate(model).IsValid)
+            var categoriaProduto = new CategoriaProduto
             {
-                context.CategoriasProdutos.Add(model);
+                Id=0,
+                CategoriaId=categoriaId,
+                ProdutoId=produtoId
+            };
+            var validator = new CategoriaProdutoValidator();
+            if (validator.Validate(categoriaProduto).IsValid)
+            {
+                context.CategoriasProdutos.Add(categoriaProduto);
                 await context.SaveChangesAsync();
-                return model;
+                return categoriaProduto;
             }
             else
             {
@@ -78,7 +74,10 @@ namespace APIDesafio.Controllers
             {
                 if (context.CategoriasProdutos.Find(model.Id) != null)
                 {
-                    context.CategoriasProduto.Find(model.Id).Titulo = model.Titulo;
+                    var categoriaProduto = context.CategoriasProdutos.Find(model.Id);
+                    categoriaProduto.CategoriaId = model.CategoriaId;
+                    categoriaProduto.ProdutoId = model.ProdutoId;
+
                     await context.SaveChangesAsync();
                     return "Alterado com sucesso";
                 }

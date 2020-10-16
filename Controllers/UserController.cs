@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace APIDesafio.Controllers
 {
     [Route("v1/account")]
-    public class HomeController : Controller
+    public class UserController : Controller
     {
         [HttpPost]
         [Route("login")]

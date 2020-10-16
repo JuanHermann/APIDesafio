@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Http;
+using APIDesafio.Interfaces;
 
 namespace APIDesafio.Controllers
 {
@@ -17,18 +18,27 @@ namespace APIDesafio.Controllers
     [Route("categorias")]
     public class CategoriaController : Controller
     {
+        private CategoriaValidator validator;
 
+        public CategoriaController()
+        {
+            validator = new CategoriaValidator();
+        }
 
         /// <summary>
         /// Busca todas as Categorias cadastradas.
         /// </summary>
+        /// <response code="200">Retorna a lista com todas Categorias</response>
+        /// <response code="400">Erro na requisição</response>   
         [HttpGet]
         [Route("")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<List<Categoria>>> Get([FromServices] DataContext context)
         {
             var categorias = await context.Categorias.ToListAsync();
 
-            return categorias;
+            return Ok(categorias);
         }
 
         /// <summary>
@@ -36,29 +46,27 @@ namespace APIDesafio.Controllers
         /// </summary>
         /// <remarks>
         /// Exemplo de request:
-        ///
         ///     {
-        ///        "Id": 0,
         ///        "Titulo": "Alimento"
         ///     }
-        ///
         /// </remarks>
         /// <param name="model"></param>
         /// <returns>A nova Categoria cadastrada</returns>
-        /// <response code="201">Returns the newly created item</response>
-        /// <response code="400">If the item is null</response>            
+        /// <response code="201">Retorna Categoria cadastrada.</response>
+        /// <response code="400">Erro no cadastro.</response>            
         [HttpPost]
         [Route("")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Categoria>> Post([FromServices] DataContext context, [FromBody] Categoria model)
         {
-            var validator = new CategoriaValidator();
+            //var validator = new CategoriaValidator();
             if (validator.Validate(model).IsValid)
             {
                 context.Categorias.Add(model);
                 await context.SaveChangesAsync();
-                return model;
+
+                return Created("", model);
             }
             else
             {
@@ -71,22 +79,25 @@ namespace APIDesafio.Controllers
         /// </summary>
         [HttpPut]
         [Route("")]
-        public async Task<string> Put([FromServices] DataContext context, [FromBody] Categoria model)
+        public async Task<ActionResult<Categoria>> Put([FromServices] DataContext context, [FromBody] Categoria model)
         {
-            var validator = new CategoriaValidator();
+
             if (validator.Validate(model).IsValid)
             {
                 if (context.Categorias.Find(model.Id) != null)
                 {
-                    context.Categorias.Find(model.Id).Titulo = model.Titulo;
+                    var categoria =  context.Categorias.Find(model.Id);
+
+                    categoria.Titulo = model.Titulo;
+
                     await context.SaveChangesAsync();
-                    return "Alterado com sucesso";
+                    return Ok(model);
                 }
-                return "Categoria não encontrada";
+                return NotFound(model);
             }
             else
             {
-                return ModelState.ToString();
+                return BadRequest(ModelState);
             }
         }
 
@@ -97,21 +108,20 @@ namespace APIDesafio.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("{id:int}")]
-        public async Task<string> Delete([FromServices] DataContext context, int id)
+        public async Task<ActionResult<Categoria>> Delete([FromServices] DataContext context, int id)
         {
             var categoria = context.Categorias.Find(id);
             if (categoria != null)
             {
                 context.Categorias.Remove(categoria);
                 await context.SaveChangesAsync();
-                return "Categoria deletada";
+                return Ok("Categoria deletada");
             }
             else
             {
-                return "Categoria não encontrada";
+                return NotFound();
             }
         }
-
 
 
     }
