@@ -15,7 +15,7 @@ namespace APIDesafio.Interfaces
         public int Largura { get; set; }
         public int Comprimento { get; set; }
         public Double Peso { get; set; }
-        public string CodigoDeBarras { get; set; }
+        public Decimal CodigoDeBarras { get; set; } 
         public Double Valor { get; set; }
         public DateTime DataAquisicao { get; set; } = DateTime.Now;
     }

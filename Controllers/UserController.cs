@@ -11,16 +11,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace APIDesafio.Controllers
 {
-    [Route("v1/account")]
+    [Route("User")]
     public class UserController : Controller
     {
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<dynamic>> Authenticate([FromServices] DataContext context, [FromBody] User model)
+        public async Task<ActionResult<dynamic>> Authenticate([FromServices] DataContext context, string login, string senha)
         {
+            var userLogin = new User
+            {
+                Id = 0,
+                UserName = login,
+                Password = senha,
+                Role = "employee"
+            };
             var users = await context.Users.ToListAsync();
-            var user = users.Where(x => x.UserName.ToLower() == model.UserName.ToLower() && x.Password == model.Password).FirstOrDefault();
+            var user = users.Where(x => x.UserName.ToLower() == userLogin.UserName.ToLower() && x.Password == userLogin.Password).FirstOrDefault();
 
             if (user == null)
                 return NotFound(new { message = "Usuário ou senha inválidos" });
@@ -32,6 +39,25 @@ namespace APIDesafio.Controllers
                 user,
                 token
             };
+        }
+
+        [HttpPost]
+        [Route("CreateLogin")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Post([FromServices] DataContext context, string login, string senha)
+        {
+            var user = new User
+            {
+                Id = 0,
+                UserName = login,
+                Password = senha,
+                Role = "employee"
+            };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            return Created("", user);
+
         }
 
         [HttpGet]

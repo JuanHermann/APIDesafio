@@ -5,9 +5,8 @@ using APIDesafio.Models;
 using APIDesafio.Validators;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System;
 using Microsoft.AspNetCore.Http;
-using APIDesafio.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace APIDesafio.Controllers
 {
@@ -16,6 +15,7 @@ namespace APIDesafio.Controllers
     /// </summary>
     [ApiController]
     [Route("categorias")]
+    [Authorize]
     public class CategoriaController : Controller
     {
         private CategoriaValidator validator;
@@ -23,6 +23,21 @@ namespace APIDesafio.Controllers
         public CategoriaController()
         {
             validator = new CategoriaValidator();
+        }
+
+        /// <summary>
+        /// Busca uma Categoria cadastrada conforme o id enviado.
+        /// </summary>
+        [HttpGet]
+        [Route("{id:int}")]
+        public async Task<ActionResult<Categoria>> Get([FromServices] DataContext context, int id)
+        {
+            var categoria = await context.Categorias.FindAsync(id);
+            if (categoria != null)
+            { return Ok(categoria); }
+            else {
+                return NotFound();
+            }
         }
 
         /// <summary>
@@ -60,7 +75,6 @@ namespace APIDesafio.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Categoria>> Post([FromServices] DataContext context, [FromBody] Categoria model)
         {
-            //var validator = new CategoriaValidator();
             if (validator.Validate(model).IsValid)
             {
                 context.Categorias.Add(model);

@@ -15,7 +15,6 @@ namespace APIDesafio.Data
 
         public DbSet<CategoriaProduto> CategoriasProdutos { get; set; }
 
-
         public DbSet<User> Users { get; set; }
 
 

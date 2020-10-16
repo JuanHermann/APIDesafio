@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace APIDesafio.Controllers
 {
@@ -15,9 +16,33 @@ namespace APIDesafio.Controllers
     /// </summary>
     [ApiController]
     [Route("categoriasprodutos")]
+    [Authorize]
     public class CategoriaProdutoController : Controller
     {
+        private CategoriaProdutoValidator validator;
 
+        public CategoriaProdutoController()
+        {
+            validator = new CategoriaProdutoValidator();
+        }
+
+
+        /// <summary>
+        /// Busca uma CategoriaProdutos cadastradas conforme o id enviado.
+        /// </summary>
+        [HttpGet]
+        [Route("{id:int}")]
+        public async Task<ActionResult<CategoriaProduto>> Get([FromServices] DataContext context,int id )
+        {
+            var categoriaProdutos = await context.CategoriasProdutos.FindAsync(id);
+
+            if (categoriaProdutos != null)
+            { return Ok(categoriaProdutos); }
+            else
+            {
+                return NotFound();
+            }
+        }
 
         /// <summary>
         /// Busca todas as CategoriaProdutos cadastradas.
@@ -43,13 +68,7 @@ namespace APIDesafio.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<CategoriaProduto>> Post([FromServices] DataContext context, int categoriaId,int produtoId)
         {
-            var categoriaProduto = new CategoriaProduto
-            {
-                Id=0,
-                CategoriaId=categoriaId,
-                ProdutoId=produtoId
-            };
-            var validator = new CategoriaProdutoValidator();
+            var categoriaProduto = new CategoriaProduto(0, categoriaId, produtoId);
             if (validator.Validate(categoriaProduto).IsValid)
             {
                 context.CategoriasProdutos.Add(categoriaProduto);
@@ -69,19 +88,18 @@ namespace APIDesafio.Controllers
         [Route("")]
         public async Task<string> Put([FromServices] DataContext context, [FromBody] CategoriaProduto model)
         {
-            var validator = new CategoriaProdutoValidator();
             if (validator.Validate(model).IsValid)
             {
                 if (context.CategoriasProdutos.Find(model.Id) != null)
                 {
-                    var categoriaProduto = context.CategoriasProdutos.Find(model.Id);
+                    var categoriaProduto = await context.CategoriasProdutos.FindAsync(model.Id);
                     categoriaProduto.CategoriaId = model.CategoriaId;
                     categoriaProduto.ProdutoId = model.ProdutoId;
 
                     await context.SaveChangesAsync();
                     return "Alterado com sucesso";
                 }
-                return "Categoria não encontrada";
+                return "CategoriaProduto não encontrada";
             }
             else
             {
@@ -98,7 +116,7 @@ namespace APIDesafio.Controllers
         [Route("{id:int}")]
         public async Task<string> Delete([FromServices] DataContext context, int id)
         {
-            var categoriaProduto = context.CategoriasProdutos.Find(id);
+            var categoriaProduto = await context.CategoriasProdutos.FindAsync(id);
             if (categoriaProduto != null)
             {
                 context.CategoriasProdutos.Remove(categoriaProduto);

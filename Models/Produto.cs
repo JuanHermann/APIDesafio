@@ -1,14 +1,11 @@
 using APIDesafio.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Numerics;
 
 namespace APIDesafio.Models
 {
     public class Produto
     {
-
 
         [Key]
         public int Id { get; set; }
@@ -18,7 +15,7 @@ namespace APIDesafio.Models
         public int Largura { get; set; }
         public int Comprimento { get; set; }
         public Double Peso { get; set; }
-        public string CodigoDeBarras { get; set; }
+        public Decimal CodigoDeBarras { get; set; } 
         public Double Valor { get; set; }
         public DateTime DataAquisicao { get; set; } = DateTime.Now;
         public string Imagem { get; set; }
@@ -41,6 +38,7 @@ namespace APIDesafio.Models
                 
             };
         }
+
 
 
     }

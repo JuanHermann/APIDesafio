@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using APIDesafio.Data;
 using APIDesafio.Models;
@@ -8,18 +7,13 @@ using System.Threading.Tasks;
 using APIDesafio.Validators;
 using Microsoft.AspNetCore.Http;
 using APIDesafio.Interfaces;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Text;
-using System.ComponentModel.DataAnnotations;
-using System.Buffers.Text;
-using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace APIDesafio.Controllers
 {
     [ApiController]
     [Route("produtos")]
+    [Authorize]
     public class ProdutoController : Controller
     {
 
@@ -28,6 +22,22 @@ namespace APIDesafio.Controllers
         public ProdutoController()
         {
             validator = new ProdutoValidator();
+        }
+
+        /// <summary>
+        /// Busca um Produto cadastrado conforme o id enviado.
+        /// </summary>
+        [HttpGet]
+        [Route("{id:int}")]
+        public async Task<ActionResult<Produto>> Get([FromServices] DataContext context, int id)
+        {
+            var produto = await context.Produtos.FindAsync(id);
+            if (produto != null)
+            { return Ok(produto); }
+            else
+            {
+                return NotFound();
+            }
         }
 
         /// <summary>
@@ -60,9 +70,10 @@ namespace APIDesafio.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Produto>> Post([FromServices] DataContext context, [FromBody] IProduto model)
         {
-            var produto = new Produto().IProdutoToProduto(model);
-            if (validator.Validate(produto).IsValid)
+
+            if (validator.Validate(model).IsValid)
             {
+                var produto = new Produto().IProdutoToProduto(model);
                 context.Produtos.Add(produto);
                 await context.SaveChangesAsync();
 
@@ -81,9 +92,9 @@ namespace APIDesafio.Controllers
         [Route("")]
         public async Task<ActionResult<Produto>> Put([FromServices] DataContext context, [FromBody] IProduto model)
         {
-            var produto = new Produto().IProdutoToProduto(model);
-            if (validator.Validate(produto).IsValid)
+            if (validator.Validate(model).IsValid)
             {
+                var produto = new Produto().IProdutoToProduto(model);
                 if (context.Produtos.Find(produto.Id) != null)
                 {
                     var produtoContext = context.Produtos.Find(model.Id);

@@ -1,24 +1,16 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using APIDesafio.Data;
-using APIDesafio.Models;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using APIDesafio.Validators;
 using Microsoft.AspNetCore.Http;
-using APIDesafio.Interfaces;
 using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Text;
-using System.ComponentModel.DataAnnotations;
-using System.Buffers.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace APIDesafio.Controllers
 {
     [ApiController]
     [Route("imagensprodutos")]
+    [Authorize]
     public class ImagemProdutoController : Controller
     {
 
@@ -30,12 +22,13 @@ namespace APIDesafio.Controllers
         public async Task<IActionResult> Get([FromServices] DataContext context, int id)
         {
             var sBytes = (await context.Produtos.FindAsync(id)).Imagem;
-            if (sBytes != "") {
+            if (sBytes != "")
+            {
                 return File(Convert.FromBase64String(sBytes), "image/jpeg");
             }
             else
             {
-                return BadRequest();
+                return BadRequest("Produto sem imagem ou não temos produto com esse ID.");
             }
         }
 
@@ -43,59 +36,68 @@ namespace APIDesafio.Controllers
         /// Cadastra a imagem de um Produto.
         /// </summary>
         [HttpPost]
-        [Route("{id:int}")]
-        public async Task<IActionResult> Post([FromServices] DataContext context,  int Id,  IFormFile Imagem)
+        [Route("")]
+        public async Task<IActionResult> Post([FromServices] DataContext context, int Id, IFormFile Imagem)
         {
-
-            string sByte = "";
-            if (Imagem.Length > 0)
             {
-                using (var ms = new MemoryStream())
+                string sByte = "";
+                if (Imagem.Length > 0)
                 {
-                    Imagem.CopyTo(ms);
-                    var fileBytes = ms.ToArray();
-                    sByte = Convert.ToBase64String(fileBytes);
+                    using (var ms = new MemoryStream())
+                    {
+                        Imagem.CopyTo(ms);
+                        var fileBytes = ms.ToArray();
+                        sByte = Convert.ToBase64String(fileBytes);
 
+                    }
+                }
+                var produto = context.Produtos.Find(Id);
+                if (produto != null)
+                {
+                    produto.Imagem = sByte;
+                    await context.SaveChangesAsync();
+                    return Ok("Imagem Salva");
+                }
+                else
+                {
+                    return NotFound();
                 }
             }
-            context.Produtos.Find(Id).Imagem = sByte;
-
-
-            await context.SaveChangesAsync();
-
-
-
-            return Ok();
         }
+
 
         /// <summary>
         /// Atualiza uma Imagem cadastrada.
         /// </summary>
         [HttpPut]
-        [Route("{id:int}")]
-        public async Task<ActionResult<Categoria>> Put([FromServices] DataContext context,  int Id, [FromForm] IFormFile Imagem)
+        [Route("")]
+        public async Task<IActionResult> Put([FromServices] DataContext context, int Id, IFormFile Imagem)
         {
-            string sByte = "";
-            if (Imagem.Length > 0)
             {
-                using (var ms = new MemoryStream())
+                string sByte = "";
+                if (Imagem.Length > 0)
                 {
-                    Imagem.CopyTo(ms);
-                    var fileBytes = ms.ToArray();
-                    sByte = Convert.ToBase64String(fileBytes);
+                    using (var ms = new MemoryStream())
+                    {
+                        Imagem.CopyTo(ms);
+                        var fileBytes = ms.ToArray();
+                        sByte = Convert.ToBase64String(fileBytes);
 
+                    }
+                }
+                var produto = context.Produtos.Find(Id);
+                if (produto != null)
+                {
+                    produto.Imagem = sByte;
+                    await context.SaveChangesAsync();
+                    return Ok("Imagem Alterada");
+                }
+                else
+                {
+                    return NotFound();
                 }
             }
-            context.Produtos.Find(Id).Imagem = sByte;
-
-
-            await context.SaveChangesAsync();
-
-
-
-            return Ok();
         }
-
         /// <summary>
         /// Exclui uma Imagem.
         /// </summary>
@@ -111,12 +113,14 @@ namespace APIDesafio.Controllers
                 produto.Imagem = "";
                 context.Produtos.Remove(produto);
                 await context.SaveChangesAsync();
-                return Ok("Categoria deletada");
+                return Ok("Imagem descadastrada");
             }
             else
             {
                 return NotFound();
             }
         }
+
+
     }
 }
