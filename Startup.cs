@@ -36,39 +36,43 @@ namespace APIDesafio
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //correção para o erro GENERATED
+            //services.AddDbContext<DbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"),
+            //    x => x.SetPostgresVersion(new Version(9,4))));
             services.AddDbContext<DataContext>(options =>
-                    options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+        options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+
 
             services.AddCors();
             services.AddControllers();
 
-             var key = Encoding.ASCII.GetBytes(Settings.Secret);
-             services.AddAuthentication(x =>
-             {
-                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-             })
-             .AddJwtBearer(x =>
-             {
-                 x.RequireHttpsMetadata = false;
-                 x.SaveToken = true;
-                 x.TokenValidationParameters = new TokenValidationParameters
-                 {
-                     ValidateIssuerSigningKey = true,
-                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                     ValidateIssuer = false,
-                     ValidateAudience = false
-                 };
-             });
+            var key = Encoding.ASCII.GetBytes(Settings.Secret);
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
 
             services.AddMvc(options =>
             {
                 options.Filters.Add(new ValidationFilter());
-            }).AddFluentValidation            (options =>
-            {
-                options.RegisterValidatorsFromAssemblyContaining<Startup>();
+            }).AddFluentValidation(options =>
+{
+    options.RegisterValidatorsFromAssemblyContaining<Startup>();
 
-            });
+});
 
             services.AddSwaggerGen(c =>
             {
@@ -118,10 +122,10 @@ namespace APIDesafio
 
             app.UseRouting();
 
-             app.UseCors(x => x
-                 .AllowAnyOrigin()
-                 .AllowAnyMethod()
-                 .AllowAnyHeader());
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
 
             app.UseAuthentication();
             app.UseAuthorization();

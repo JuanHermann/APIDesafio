@@ -98,6 +98,7 @@ namespace APIDesafio.Controllers
                 }
             }
         }
+
         /// <summary>
         /// Exclui uma Imagem.
         /// </summary>
@@ -111,7 +112,6 @@ namespace APIDesafio.Controllers
             if (produto != null)
             {
                 produto.Imagem = "";
-                context.Produtos.Remove(produto);
                 await context.SaveChangesAsync();
                 return Ok("Imagem descadastrada");
             }
